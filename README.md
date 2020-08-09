@@ -52,3 +52,31 @@ optional arguments:
 ```bash
 cd test && ./run_test.sh
 ```
+
+### count statistics
+
+```bash
+$ cd test/01_demultiplexed_fastq_files
+$ head test_rev7_barcode2count.tsv 
+Barcode	Count
+CGCGT	1181
+CGCTA	901
+AGCTT	885
+TCAGC	853
+GCTAC	716
+GTATC	684
+GGAAC	680
+CCCTT	657
+ACAAC	654
+$ head test_rev7_sample2count.tsv 
+Sample	Count
+A1A_a	647
+A1B_a	493
+A1C_a	574
+A2A_a	606
+A2B_a	660
+A2C_a	606
+A3A_a	519
+T0_a	606
+T0_b	908
+```
