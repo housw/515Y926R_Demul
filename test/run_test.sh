@@ -16,9 +16,9 @@ barcode_length=5
 primer_regex="GTG[TC]CAGC[AC]GCCGCGGTAA"
 prefix="test_rev7"
 
-source activate py3k
+#source activate py3k
 ../split_samples_by_barcodes_in_fwd_reads.py ${barcode_file} ${fwd_read} ${rev_read} \
         -o ${Demul_Dir} -p ${prefix}_ -s ${start_position} \
         -r ${primer_regex} -b ${barcode_length} -l "info" 2>&1 | tee -a 01_demultiplex_stdout_stderr.log
-conda deactivate
+#conda deactivate
 gzip ${Demul_Dir}/*.fastq
