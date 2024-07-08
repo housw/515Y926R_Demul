@@ -107,14 +107,6 @@ def parse_fastq(fastq_file):
     ih.close()
 
 
-# https://en.wikipedia.org/wiki/Hamming_distance#Algorithm_example
-def hamming_distance(s1, s2):
-    #Return the Hamming distance between equal-length sequences
-    if len(s1) != len(s2):
-        raise ValueError("Undefined for sequences of unequal length")
-    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
-
-
 def get_barcode2samples(barcode_file):
     """ read in two column barcode file, return barcode2sample dict
     """
@@ -147,27 +139,26 @@ def get_barcode2handles(barcode2samples, prefix):
         barcode2handles[barcode] = [fwd_handle, rev_handle]
     
     # add unknown
-    barcode2handles["unknown"] = [open(prefix+"unknown.R1.fastq", "w"), open(prefix+"unknown.R1.fastq", "w")]    
+    barcode2handles["unknown"] = [open(prefix+"unknown.R1.fastq", "w"), open(prefix+"unknown.R2.fastq", "w")]    
 
     return barcode2handles
 
-
-def get_dist_1_close_barcode(barcode, barcodes):
-    dist = []
-    for bar in barcodes:
-        #sys.stdout.write(barcode +"\t"+ ind +"\n")
-        dist.append(hamming_distance(barcode, bar))
-    dist = np.array(dist)
-    # close barcode should be within 1 hamming distance, and should be the only best one
-    if dist.min() == 1 and sum(dist == dist.min()) == 1:
-        idx = np.where(dist==dist.min())[0][0]
-        #print("idx is ", idx)
-        close_barcode = barcodes[idx]
-    else:
-        close_barcode = "unknown"
-
-    return close_barcode
     
+
+def get_515F_match_barcode(match, read, start_position, barcode_length):
+    """
+    """
+    primer_start = match.start()
+    primer_seq = match.group()
+    barcode_start = primer_start - barcode_length
+    if barcode_start < 0:
+        barcode_start = 0
+    barcode = read.seq[barcode_start:primer_start]
+    while len(barcode) < barcode_length:
+        barcode = "N" + barcode
+
+    return barcode
+
 
 def split_samples_by_barcode(fwd_fastq, rev_fastq, barcode2samples, prefix, start_position, barcode_length, primer_regex):
     """
@@ -185,51 +176,34 @@ def split_samples_by_barcode(fwd_fastq, rev_fastq, barcode2samples, prefix, star
             logger.debug("-----------------------------------")
 
             # parse barcode by primer regex matching
-            match = re.search(primer_regex, fwd_read.seq)
-            if match:
-                primer_start = match.start()
-                primer_seq = match.group()
-                if primer_start+1 > barcode_length:
-                    barcode_start = primer_start - barcode_length
-                    barcode = fwd_read.seq[barcode_start:primer_start]
-                else:
-                    logger.warning("barcode sequence is truncated since primer "\
-                                   "starts at 1-based index {0}".format(primer_start+1))
-                    barcode = "unknown"
-                logger.debug("barcode: {0}{1}".format("".join([" "]*barcode_start) , barcode))
-                logger.debug("primer : {0}{1}".format("".join([" "]*primer_start), primer_seq))
-                logger.debug("fwd seq: {0}".format(fwd_read.seq[:50]))
+            match_fwd = re.search(primer_regex, fwd_read.seq)
+            match_rev = re.search(primer_regex, rev_read.seq)
+            if match_fwd:
+                barcode = get_515F_match_barcode(match_fwd, fwd_read, start_position, barcode_length)
+            elif match_rev:
+                barcode = get_515F_match_barcode(match_rev, rev_read, start_position, barcode_length)
             else:
                 barcode = fwd_read.seq[start_position-1:start_position-1+barcode_length]
                 logger.debug("barcode: {0}{1}".format("".join([" "]*(start_position-1)), barcode))
                 logger.debug("fwd seq: {0}".format(fwd_read.seq[:50]))
-            
 
+            # count barcode 
             if barcode in barcode2counts:
                 barcode2counts[barcode] += 1
             else:
                 barcode2counts[barcode] = 1
+
+            # write barcoded reads 
             if barcode in barcode2samples:
                 barcode2handles[barcode][0].write(str(fwd_read))
                 barcode2handles[barcode][1].write(str(rev_read))
                 sample2counts[barcode2samples[barcode]] += 1 
             else:
-                # find closest barcode
-                if barcode != "unknown":
-                    logger.debug("try to find the closest known barcode...")
-                    close_barcode = get_dist_1_close_barcode(barcode, list(barcode2samples.keys()))
-                    if close_barcode != "unknown":
-                        logger.debug("found  : {0}{1}".format("".join([" "]*barcode_start) , close_barcode))
-                        barcode2handles[close_barcode][0].write(str(fwd_read))
-                        barcode2handles[close_barcode][1].write(str(rev_read))
-                        sample2counts[barcode2samples[close_barcode]] += 1
-                    else:
-                        logger.debug("no close barcode found, set to unknown")
-                        barcode = "unknown"
-                if barcode == "unknown":
-                    barcode2handles['unknown'][0].write(str(fwd_read))
-                    barcode2handles['unknown'][1].write(str(rev_read))
-                    sample2counts['unknown'] += 1
+                barcode = "unknown"
+                barcode2handles['unknown'][0].write(str(fwd_read))
+                barcode2handles['unknown'][1].write(str(rev_read))
+                sample2counts['unknown'] += 1
+
         else:
             logger.error("Forward read %s is different with reverse read %s"%(fwd_read.name, rev_read.name)) 
             barcode2handles['unknown'][0].write(str(fwd_read))
