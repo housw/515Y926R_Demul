@@ -50,33 +50,62 @@ optional arguments:
 ### example
 
 ```bash
+#-------------
+# Barcode File
+#-------------
+shengwei@pacific:~/GitHub/515Y926R_Demul/test$ cat A1_barcodes.tsv
+#SampleID       BarcodeSequence
+A1_1    TCAGC
+A1_2    GTATC
+A1_3    GCTAC
+A1_4    ACGCA
+A1_5    GAGAC
+A1_6    GACTC
+A1_7    CTAGC
+A1_8    CGCTC
+A1_9    AACAT
+```
+
+### Test run
+
+```bash
 cd test && ./run_test.sh
 ```
 
 ### count statistics
 
 ```bash
-$ cd test/01_demultiplexed_fastq_files
-$ head test_rev7_barcode2count.tsv 
+#--------
+# Results
+#--------
+shengwei@pacific:~/GitHub/515Y926R_Demul/test/01_demultiplexed_fastq_files$ cat split_barcode2count.tsv 
 Barcode	Count
-CGCGT	1181
-CGCTA	901
-AGCTT	885
-TCAGC	853
-GCTAC	716
-GTATC	684
-GGAAC	680
-CCCTT	657
-ACAAC	654
-$ head test_rev7_sample2count.tsv 
+CGCTC	737
+CTAGC	643
+AACAT	594
+GAGAC	579
+GACTC	533
+GTATC	530
+ACGCA	420
+GCTAC	345
+TCAGC	311
+ATCAC	95
+NNCTC	12
+NNAGC	10
+NAGAC	9
+NCTAC	8
+NNATC	7
+
+shengwei@pacific:~/GitHub/515Y926R_Demul/test/01_demultiplexed_fastq_files$ cat split_sample2count.tsv 
 Sample	Count
-A1A_a	647
-A1B_a	493
-A1C_a	574
-A2A_a	606
-A2B_a	660
-A2C_a	606
-A3A_a	519
-T0_a	606
-T0_b	908
+A1_1	311
+A1_2	530
+A1_3	345
+A1_4	420
+A1_5	579
+A1_6	533
+A1_7	643
+A1_8	737
+A1_9	594
+unknown	308
 ```
