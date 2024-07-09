@@ -11,7 +11,7 @@ A simple barcode splitter for 515F/926R amplified amplicon sequencing data. It a
 
 ### usage
 ```
-usage: split_samples_by_barcodes_in_fwd_reads.py [-h] [-s START_POSITION]
+usage: split_samples_by_barcodes_in_paired_reads.py [-h] [-s START_POSITION]
                                                  [-r PRIMER_REGEX]
                                                  [-b BARCODE_LENGTH]
                                                  [-o OUTPUT_DIR] [-p PREFIX]
