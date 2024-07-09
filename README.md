@@ -1,5 +1,5 @@
 # 515Y926R_Demul
-simple barcode spliter for 515F/926R amplified amplicon sequencing data
+A simple barcode splitter for 515F/926R amplified amplicon sequencing data. It assumes a pair of `fastq` files that are amplified using the Fuhrmam Lab [protocol](https://www.protocols.io/view/fuhrman-lab-515f-926r-16s-and-18s-rrna-gene-sequen-j8nlkpd1g5r7/v2), and for each reverse primer, samples with different forward barcoded primers are pooled together. This script will use regular expressions to locate the forward primer 515F in either R1 or R2 reads, and then split samples based on the barcodes in front of the forward primer.
 
 
 ### requirement
